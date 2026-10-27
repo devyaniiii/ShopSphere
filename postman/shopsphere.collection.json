@@ -1,0 +1,78 @@
+<escape>{
+  "info": {
+    "name": "ShopSphere API",
+    "description": "Health and Ping endpoint checks for local ShopSphere development.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api",
+          "host": ["{{baseUrl}}"],
+          "path": ["api"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Health returns HTTP 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Health returns JSON', function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test('Health response has success status', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.status).to.eql('success');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Ping",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/ping",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "ping"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Ping returns HTTP 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Ping returns JSON', function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test('Ping has expected response envelope', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.status).to.eql('success');",
+              "    pm.expect(body.data).to.be.an('object');",
+              "    pm.expect(body.data.message).to.eql('ShopSphere API is running');",
+              "    pm.expect(body.data.timestamp).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ]
+}</escape>
