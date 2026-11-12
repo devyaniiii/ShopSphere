@@ -93,3 +93,46 @@ Environment templates are provided in each project directory. Do not commit real
 ## Development Workflow
 
 Create a task-specific branch from `main`, make focused changes, verify the implementation, and submit a pull request or commit according to the internship instructions.
+
+## Environment Configuration
+
+ShopSphere uses environment variables to configure the backend safely. Sensitive credentials must never be committed to Git.
+
+### Setup
+
+1. Navigate to the server directory:
+
+   ```bash
+   cd server
+   ```
+
+2. Create your local environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Update `.env` with your local MongoDB connection details.
+
+4. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+### Environment Variables
+
+| Variable    | Required | Default / Example                    | Description                                                                         |
+| ----------- | -------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
+| NODE_ENV    | No       | development                          | Application environment: development, production, or test. Defaults to development. |
+| PORT        | Yes      | 5000                                 | Port on which the backend server listens.                                           |
+| MONGODB_URI | Yes      | mongodb://127.0.0.1:27017/shopsphere | MongoDB connection URI.                                                             |
+
+### Environment Safety
+
+- `server/.env` contains local secrets and is ignored by Git.
+- `server/.env.example` contains example configuration only.
+- Never commit database usernames, passwords, or production credentials.
+- Environment variables are loaded and validated centrally through `server/src/config/env.js`.
+- Invalid or missing required variables prevent the server from starting.
+- Development and production modes are identified using `NODE_ENV`.

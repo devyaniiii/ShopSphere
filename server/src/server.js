@@ -1,17 +1,19 @@
 
-require('dotenv').config();
-
-const app = require('./app');
-const connectDB = require('./config/db');
-
-const PORT = process.env.PORT || 5000;
+const env = require("./config/env");
+const app = require("./app");
+const connectDB = require("./config/db");
 
 const startServer = async () => {
   await connectDB();
 
-  app.listen(PORT, () => {
-    console.log(`ShopSphere server running on port ${PORT}`);
+  app.listen(env.PORT, () => {
+    console.log(
+      `ShopSphere server running in ${env.NODE_ENV} mode on port ${env.PORT}`
+    );
   });
 };
 
-startServer();
+startServer().catch((error) => {
+  console.error("Server startup failed:", error.message);
+  process.exit(1);
+});
