@@ -21,6 +21,7 @@ const env = {
   MONGODB_URI: process.env.MONGODB_URI,
   isDevelopment: (process.env.NODE_ENV || "development") === "development",
   isProduction: process.env.NODE_ENV === "production",
+  CORS_ORIGINS: process.env.CORS_ORIGINS || "http://localhost:4200",
 };
 
 if (!Number.isInteger(env.PORT) || env.PORT < 1 || env.PORT > 65535) {

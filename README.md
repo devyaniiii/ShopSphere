@@ -136,3 +136,48 @@ ShopSphere uses environment variables to configure the backend safely. Sensitive
 - Environment variables are loaded and validated centrally through `server/src/config/env.js`.
 - Invalid or missing required variables prevent the server from starting.
 - Development and production modes are identified using `NODE_ENV`.
+
+## Logging, CORS & Request Validation
+
+### Request Logging
+The backend includes request logging middleware that records:
+- HTTP method
+- Request path
+- Response status code
+- Request duration in milliseconds
+- Timestamp
+
+### CORS Configuration
+CORS uses an environment-based origin allowlist.
+
+Configure `CORS_ORIGINS` in `server/.env`:
+
+```env
+CORS_ORIGINS=http://localhost:4200
+```
+
+For multiple allowed origins, separate them with commas.
+
+### Request Validation
+Zod is used to validate incoming request data.
+
+Validation middleware is available at:
+`server/src/middleware/validate.js`
+
+### Sample Validated Endpoint
+
+**POST** `/api/validation/feedback`
+
+Example request:
+
+```json
+{
+  "name": "Devyani",
+  "email": "devyani@example.com",
+  "message": "This is a sample feedback message."
+}
+```
+
+Valid requests return HTTP 201. Invalid requests return HTTP 400 with validation errors.
+
+This endpoint demonstrates validation only; it does not store feedback in the database.
