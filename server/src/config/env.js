@@ -22,6 +22,9 @@ const env = {
   isDevelopment: (process.env.NODE_ENV || "development") === "development",
   isProduction: process.env.NODE_ENV === "production",
   CORS_ORIGINS: process.env.CORS_ORIGINS || "http://localhost:4200",
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
 };
 
 if (!Number.isInteger(env.PORT) || env.PORT < 1 || env.PORT > 65535) {
