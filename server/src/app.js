@@ -1,4 +1,3 @@
-
 const express = require("express");
 
 const logger = require("./middleware/logger");
@@ -9,7 +8,7 @@ const pingRoutes = require("./routes/ping.routes");
 const validationRoutes = require("./routes/validation.routes");
 
 const { notFound, errorHandler } = require("./middleware/error");
-
+const userRoutes = require("./routes/user.routes");
 const app = express();
 
 // Request logging
@@ -25,6 +24,7 @@ app.use(express.json());
 app.use("/api", healthRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/validation", validationRoutes);
+app.use("/api/users", userRoutes);
 
 // 404 and error handling
 app.use(notFound);

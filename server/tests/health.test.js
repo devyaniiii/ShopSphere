@@ -1,3 +1,7 @@
+jest.mock("../src/config/firebaseAdmin", () => ({
+  auth: jest.fn(),
+}));
+
 const request = require("supertest");
 const app = require("../src/app");
 

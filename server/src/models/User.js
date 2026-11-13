@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -15,9 +14,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    firebaseUid: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: 8,
     },
     role: {

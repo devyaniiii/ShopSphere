@@ -40,12 +40,20 @@ describe("Authentication middleware", () => {
     await auth(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      message: "Authentication token is required.",
+    });
     expect(next).not.toHaveBeenCalled();
   });
 
   it("should return 401 when token is invalid", async () => {
     req.headers.authorization = "Bearer invalid-token";
-    verifyIdToken.mockRejectedValue(new Error("Invalid token"));
+
+    const error = new Error("Invalid token");
+    error.code = "auth/invalid-id-token";
+
+    verifyIdToken.mockRejectedValue(error);
 
     await auth(req, res, next);
 
@@ -57,11 +65,13 @@ describe("Authentication middleware", () => {
     req.headers.authorization = "Bearer valid-token";
 
     verifyIdToken.mockResolvedValue({
+      uid: "firebase123",
       email: "customer@example.com",
     });
 
     const databaseUser = {
       _id: { toString: () => "user123" },
+      name: "Test Customer",
       email: "customer@example.com",
       role: "customer",
     };
@@ -72,8 +82,33 @@ describe("Authentication middleware", () => {
 
     await auth(req, res, next);
 
+    expect(User.findOne).toHaveBeenCalledWith({
+      firebaseUid: "firebase123",
+    });
+
     expect(req.user.id).toBe("user123");
+    expect(req.user.name).toBe("Test Customer");
+    expect(req.user.email).toBe("customer@example.com");
     expect(req.user.role).toBe("customer");
+
     expect(next).toHaveBeenCalled();
+  });
+
+  it("should return 401 when MongoDB user is not found", async () => {
+    req.headers.authorization = "Bearer valid-token";
+
+    verifyIdToken.mockResolvedValue({
+      uid: "firebase123",
+      email: "customer@example.com",
+    });
+
+    User.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(null),
+    });
+
+    await auth(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
   });
 });
