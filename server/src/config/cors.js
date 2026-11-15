@@ -9,7 +9,6 @@ const allowedOrigins = env.CORS_ORIGINS
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests without an Origin header (Postman, server-to-server).
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
