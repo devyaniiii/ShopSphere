@@ -6,6 +6,7 @@ const corsMiddleware = require("./config/cors");
 const healthRoutes = require("./routes/health.routes");
 const pingRoutes = require("./routes/ping.routes");
 const validationRoutes = require("./routes/validation.routes");
+const categoryRoutes = require("./routes/category.routes");
 
 const { notFound, errorHandler } = require("./middleware/error");
 const userRoutes = require("./routes/user.routes");
@@ -25,6 +26,7 @@ app.use("/api", healthRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/validation", validationRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // 404 and error handling
 app.use(notFound);
