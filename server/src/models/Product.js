@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+const createSlug = (value) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 const variantSchema = new mongoose.Schema({
   size: {
     type: String,
@@ -34,6 +41,12 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Product name is required"],
+      trim: true,
+    },
+    slug: {
+      type: String,
+      required: [true, "Product slug is required"],
+      lowercase: true,
       trim: true,
     },
     description: {
@@ -79,6 +92,13 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+// Generate a slug automatically when a product is created or renamed.
+productSchema.pre("validate", function () {
+  if (!this.slug) {
+    this.slug = createSlug(this.name);
+  }
+});
+
 // Prevent duplicate SKUs within the same product.
 productSchema.pre("validate", function () {
   const skus = this.variants.map((variant) => variant.sku?.trim().toUpperCase());
@@ -90,6 +110,7 @@ productSchema.pre("validate", function () {
 });
 
 // Prevent the same SKU from being used by different products.
+productSchema.index({ slug: 1 }, { unique: true, sparse: true });
 productSchema.index({ "variants.sku": 1 }, { unique: true, sparse: true });
 
 productSchema.index({ name: "text", description: "text" });

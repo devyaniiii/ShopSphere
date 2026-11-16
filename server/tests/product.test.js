@@ -41,7 +41,7 @@ describe("Product service", () => {
         _id: productData.category,
         isActive: true,
       });
-      expect(Product.create).toHaveBeenCalledWith(productData);
+      expect(Product.create).toHaveBeenCalledWith({ ...productData, slug: "rose-plant" });
       expect(result).toEqual(product);
     });
 
@@ -131,6 +131,63 @@ describe("Product service", () => {
     });
   });
 
+  describe("getProductBySlug", () => {
+    it("should return an active product with related products", async () => {
+      const category = { _id: "category123", name: "Indoor Plants" };
+      const productData = {
+        _id: "product123",
+        name: "Rose Plant",
+        slug: "rose-plant",
+        category,
+        variants: [{ sku: "ROSE-001", size: "Small" }],
+      };
+      const product = {
+        ...productData,
+        toObject: jest.fn().mockReturnValue(productData),
+      };
+      const relatedProducts = [
+        { name: "Money Plant", slug: "money-plant" },
+        { name: "Snake Plant", slug: "snake-plant" },
+      ];
+
+      Product.findOne.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(product),
+      });
+
+      Product.find.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockResolvedValue(relatedProducts),
+      });
+
+      const result = await productService.getProductBySlug("rose-plant");
+
+      expect(Product.findOne).toHaveBeenCalledWith({
+        slug: "rose-plant",
+        isActive: true,
+      });
+      expect(Product.find).toHaveBeenCalledWith({
+        category: category._id,
+        _id: { $ne: product._id },
+        isActive: true,
+      });
+      expect(result.variants).toEqual(productData.variants);
+      expect(result.category).toEqual(category);
+      expect(result.relatedProducts).toEqual(relatedProducts);
+    });
+
+    it("should reject when the product does not exist or is inactive", async () => {
+      Product.findOne.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(productService.getProductBySlug("unknown-product")).rejects.toMatchObject({
+        statusCode: 404,
+      });
+
+      expect(Product.find).not.toHaveBeenCalled();
+    });
+  });
   describe("updateProduct", () => {
     it("should update an existing product", async () => {
       const product = {

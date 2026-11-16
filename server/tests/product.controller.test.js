@@ -1,7 +1,7 @@
 jest.mock("../src/services/product.service", () => ({
   createProduct: jest.fn(),
   getProducts: jest.fn(),
-  getProduct: jest.fn(),
+  getProductBySlug: jest.fn(),
   updateProduct: jest.fn(),
   deleteProduct: jest.fn(),
 }));
@@ -73,12 +73,12 @@ describe("Product controller", () => {
 
   it("should return a single product with status 200", async () => {
     const product = { _id: "product123", name: "Rose Plant" };
-    req.params.id = "product123";
-    productService.getProduct.mockResolvedValue(product);
+    req.params.slug = "rose-plant";
+    productService.getProductBySlug.mockResolvedValue(product);
 
     await productController.getProduct(req, res, next);
 
-    expect(productService.getProduct).toHaveBeenCalledWith("product123");
+    expect(productService.getProductBySlug).toHaveBeenCalledWith("rose-plant");
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       status: "success",

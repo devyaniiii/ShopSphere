@@ -3,6 +3,7 @@ const {
   validateUpdateProduct,
   validateProductQuery,
   validateProductId,
+  validateProductSlug,
 } = require("../src/validators/product.validator");
 
 describe("Product validators", () => {
@@ -132,6 +133,20 @@ describe("Product validators", () => {
 
     validateProductQuery(req, res, next);
 
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("should accept a valid product slug", () => {
+    req.params = { slug: "rose-plant" };
+    validateProductSlug(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it("should reject an invalid product slug", () => {
+    req.params = { slug: "Rose Plant!" };
+    validateProductSlug(req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(next).not.toHaveBeenCalled();
   });

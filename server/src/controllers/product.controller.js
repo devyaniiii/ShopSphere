@@ -21,9 +21,9 @@ const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
-// GET /api/products/:id
+// GET /api/products/:slug
 const getProduct = asyncHandler(async (req, res) => {
-  const product = await productService.getProduct(req.params.id);
+  const product = await productService.getProductBySlug(req.params.slug);
 
   return res.status(200).json({
     status: "success",

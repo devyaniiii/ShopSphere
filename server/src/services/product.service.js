@@ -16,11 +16,40 @@ const validateCategory = async (categoryId) => {
   return category;
 };
 
+// Convert a product name into a URL-friendly slug.
+const createSlug = (name) =>
+  name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "product";
+
+// Generate a unique slug, excluding the current product when updating.
+const generateUniqueSlug = async (name, excludeId = null) => {
+  const baseSlug = createSlug(name);
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (
+    await Product.findOne({
+      slug,
+      ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+    })
+  ) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+};
+
 // Create a product.
 const createProduct = async (data) => {
   await validateCategory(data.category);
 
-  return Product.create(data);
+  const slug = await generateUniqueSlug(data.name);
+
+  return Product.create({ ...data, slug });
 };
 
 // Get products with pagination, filtering and sorting.
@@ -88,7 +117,7 @@ const getProducts = async (query) => {
   };
 };
 
-// Get one product by ID.
+// Get one active product by ID.
 const getProduct = async (id) => {
   const product = await Product.findOne({
     _id: id,
@@ -100,6 +129,36 @@ const getProduct = async (id) => {
   }
 
   return product;
+};
+
+// Get one active product by slug, including related products.
+const getProductBySlug = async (slug) => {
+  const product = await Product.findOne({
+    slug,
+    isActive: true,
+  }).populate("category", "name slug");
+
+  if (!product) {
+    throw new AppError("Product not found.", 404);
+  }
+
+  const categoryId = product.category?._id || product.category;
+
+  const relatedProducts = await Product.find({
+    category: categoryId,
+    _id: { $ne: product._id },
+    isActive: true,
+  })
+    .select("name slug price images")
+    .limit(4)
+    .lean();
+
+  const productData = typeof product.toObject === "function" ? product.toObject() : { ...product };
+
+  return {
+    ...productData,
+    relatedProducts,
+  };
 };
 
 // Update a product.
@@ -114,11 +173,26 @@ const updateProduct = async (id, data) => {
     await validateCategory(data.category);
   }
 
-  const allowedFields = ["name", "description", "price", "stock", "category", "images", "isActive"];
+  const updateData = { ...data };
+
+  if (updateData.name) {
+    updateData.slug = await generateUniqueSlug(updateData.name, id);
+  }
+
+  const allowedFields = [
+    "name",
+    "slug",
+    "description",
+    "price",
+    "stock",
+    "category",
+    "images",
+    "isActive",
+  ];
 
   for (const field of allowedFields) {
-    if (Object.prototype.hasOwnProperty.call(data, field)) {
-      product[field] = data[field];
+    if (Object.prototype.hasOwnProperty.call(updateData, field)) {
+      product[field] = updateData[field];
     }
   }
 
@@ -140,6 +214,7 @@ module.exports = {
   createProduct,
   getProducts,
   getProduct,
+  getProductBySlug,
   updateProduct,
   deleteProduct,
 };

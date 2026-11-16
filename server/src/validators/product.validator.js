@@ -47,6 +47,15 @@ const productIdSchema = z.object({
   id: objectIdSchema,
 });
 
+const productSlugSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .min(1, "Product slug is required.")
+    .max(150, "Product slug is too long.")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid product slug."),
+});
+
 const validate = (schema, property) => (req, res, next) => {
   const result = schema.safeParse(req[property]);
 
@@ -75,4 +84,5 @@ module.exports = {
   validateUpdateProduct: validate(updateProductSchema, "body"),
   validateProductQuery: validate(productQuerySchema, "query"),
   validateProductId: validate(productIdSchema, "params"),
+  validateProductSlug: validate(productSlugSchema, "params"),
 };

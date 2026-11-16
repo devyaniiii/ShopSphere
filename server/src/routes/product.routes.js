@@ -10,6 +10,7 @@ const {
   validateUpdateProduct,
   validateProductQuery,
   validateProductId,
+  validateProductSlug,
 } = require("../validators/product.validator");
 
 const {
@@ -31,8 +32,8 @@ const { addVariant, updateVariant, deleteVariant } = require("../controllers/var
 // Public: Get products with pagination and filters.
 router.get("/", validateProductQuery, getProducts);
 
-// Public: Get a single product.
-router.get("/:id", validateProductId, getProduct);
+// Public: Get one product by slug, including related products.
+router.get("/:slug", validateProductSlug, getProduct);
 
 // Admin-only: Add a product variant.
 router.post(
