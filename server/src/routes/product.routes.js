@@ -13,6 +13,12 @@ const {
 } = require("../validators/product.validator");
 
 const {
+  validateCreateVariant,
+  validateUpdateVariant,
+  validateVariantParams,
+} = require("../validators/variant.validator");
+
+const {
   createProduct,
   getProducts,
   getProduct,
@@ -20,11 +26,42 @@ const {
   deleteProduct,
 } = require("../controllers/product.controller");
 
+const { addVariant, updateVariant, deleteVariant } = require("../controllers/variant.controller");
+
 // Public: Get products with pagination and filters.
 router.get("/", validateProductQuery, getProducts);
 
 // Public: Get a single product.
 router.get("/:id", validateProductId, getProduct);
+
+// Admin-only: Add a product variant.
+router.post(
+  "/:id/variants",
+  auth,
+  requireRole("admin"),
+  validateProductId,
+  validateCreateVariant,
+  addVariant
+);
+
+// Admin-only: Update a product variant.
+router.patch(
+  "/:id/variants/:variantId",
+  auth,
+  requireRole("admin"),
+  validateVariantParams,
+  validateUpdateVariant,
+  updateVariant
+);
+
+// Admin-only: Remove a product variant.
+router.delete(
+  "/:id/variants/:variantId",
+  auth,
+  requireRole("admin"),
+  validateVariantParams,
+  deleteVariant
+);
 
 // Admin-only: Create a product.
 router.post("/", auth, requireRole("admin"), validateCreateProduct, createProduct);
