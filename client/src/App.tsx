@@ -1,4 +1,4 @@
-
+import ProductDetail from "./pages/ProductDetail";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -50,6 +50,7 @@ const App = () => {
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/products/:slug" element={<ProductDetail />} />
       </Routes>
     </BrowserRouter>
   )
