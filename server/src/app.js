@@ -10,6 +10,7 @@ const categoryRoutes = require("./routes/category.routes");
 
 const { notFound, errorHandler } = require("./middleware/error");
 const userRoutes = require("./routes/user.routes");
+const productRoutes = require("./routes/product.routes");
 const app = express();
 
 // Request logging
@@ -27,6 +28,7 @@ app.use("/api/ping", pingRoutes);
 app.use("/api/validation", validationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
 
 // 404 and error handling
 app.use(notFound);
