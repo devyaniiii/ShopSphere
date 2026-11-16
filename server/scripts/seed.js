@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const mongoose = require("mongoose");
@@ -14,9 +13,7 @@ const Order = require("../src/models/Order");
 const Payment = require("../src/models/Payment");
 
 const SEED_USER_EMAIL = "seed.customer@shopsphere.local";
-const SEED_ORDER_ID = new mongoose.Types.ObjectId(
-  "650000000000000000000001"
-);
+const SEED_ORDER_ID = new mongoose.Types.ObjectId("650000000000000000000001");
 const SEED_PAYMENT_REFERENCE = "SEED-PAYMENT-0001";
 
 const seedDatabase = async () => {
@@ -93,6 +90,32 @@ const seedDatabase = async () => {
       products.push(product);
     }
 
+    // 2.1. Seed product variants only when none exist
+    const variantData = [
+      {
+        product: products[0],
+        variants: [
+          { size: "Standard", color: "Black", sku: "WH-BLK-001", price: 1999, stock: 15 },
+          { size: "Standard", color: "White", sku: "WH-WHT-001", price: 2099, stock: 10 },
+        ],
+      },
+      {
+        product: products[1],
+        variants: [
+          { size: "Standard", color: "Paperback", sku: "JAVA-BOOK-001", price: 599, stock: 40 },
+        ],
+      },
+    ];
+
+    for (const item of variantData) {
+      if (item.product.variants.length === 0) {
+        item.product.variants.push(...item.variants);
+        await item.product.save();
+        console.log("Created variants for product:", item.product.name);
+      } else {
+        console.log("Existing variants preserved:", item.product.name);
+      }
+    }
     // 3. Create a dedicated sample customer
     let user = await User.findOne({
       email: SEED_USER_EMAIL,
@@ -104,11 +127,7 @@ const seedDatabase = async () => {
       const randomPassword = crypto.randomBytes(32);
       const salt = crypto.randomBytes(16).toString("hex");
 
-      const passwordHash = crypto.scryptSync(
-        randomPassword,
-        salt,
-        64
-      ).toString("hex");
+      const passwordHash = crypto.scryptSync(randomPassword, salt, 64).toString("hex");
 
       user = await User.create({
         name: "ShopSphere Seed Customer",
@@ -171,8 +190,7 @@ const seedDatabase = async () => {
       ];
 
       const totalAmount = orderItems.reduce(
-        (total, item) =>
-          total + item.unitPrice * item.quantity,
+        (total, item) => total + item.unitPrice * item.quantity,
         0
       );
 
