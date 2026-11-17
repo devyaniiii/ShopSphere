@@ -1,5 +1,6 @@
-const asyncHandler = require("../utils/asyncHandler");
+﻿const asyncHandler = require("../utils/asyncHandler");
 const productService = require("../services/product.service");
+const searchService = require("../services/search.service");
 
 // POST /api/products
 const createProduct = asyncHandler(async (req, res) => {
@@ -13,7 +14,12 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // GET /api/products
 const getProducts = asyncHandler(async (req, res) => {
-  const result = await productService.getProducts(req.validatedQuery || req.query);
+  const query = req.validatedQuery || req.query;
+  const searchQuery = searchService.sanitizeSearchQuery(req.query.q);
+
+  const result = searchQuery
+    ? await searchService.searchProducts(searchQuery, query)
+    : await productService.getProducts(query);
 
   return res.status(200).json({
     status: "success",
