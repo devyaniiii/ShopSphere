@@ -1,5 +1,6 @@
 ﻿const Product = require("../models/Product");
 const AppError = require("../utils/AppError");
+const buildProductQuery = require("../utils/buildProductQuery");
 
 const MAX_SEARCH_LENGTH = 100;
 
@@ -18,7 +19,12 @@ const sanitizeSearchQuery = (value) => {
   }
 
   const sanitizedQuery = value
-    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .split("")
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 ? " " : character;
+    })
+    .join("")
     .replace(/\$/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -28,29 +34,18 @@ const sanitizeSearchQuery = (value) => {
 
 // Search active products using MongoDB text search and relevance sorting.
 const searchProducts = async (searchQuery, query = {}) => {
-  const page = query.page === undefined ? 1 : Number(query.page);
-  const limit = query.limit === undefined ? 10 : Number(query.limit);
+  const { filter, sort, page, limit, skip } = buildProductQuery(query);
 
-  if (!Number.isInteger(page) || page < 1) {
-    throw new AppError("Page must be a positive integer.", 400);
-  }
-
-  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-    throw new AppError("Limit must be between 1 and 100.", 400);
-  }
-
-  const filter = {
-    isActive: true,
-    $text: {
-      $search: searchQuery,
-    },
+  filter.$text = {
+    $search: searchQuery,
   };
 
-  if (query.category) {
-    filter.category = query.category;
-  }
-
-  const skip = (page - 1) * limit;
+  const searchSort = {
+    score: {
+      $meta: "textScore",
+    },
+    ...sort,
+  };
 
   const [items, totalItems] = await Promise.all([
     Product.find(filter, {
@@ -59,12 +54,7 @@ const searchProducts = async (searchQuery, query = {}) => {
       },
     })
       .populate("category", "name slug")
-      .sort({
-        score: {
-          $meta: "textScore",
-        },
-        createdAt: -1,
-      })
+      .sort(searchSort)
       .skip(skip)
       .limit(limit)
       .lean(),

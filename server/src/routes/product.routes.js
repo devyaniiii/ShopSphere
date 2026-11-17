@@ -8,9 +8,10 @@ const requireRole = require("../middleware/requireRole");
 const {
   validateCreateProduct,
   validateUpdateProduct,
-  validateProductQuery,
   validateProductId,
 } = require("../validators/product.validator");
+
+const { validateProductQuery } = require("../validators/productQuery.validator");
 
 const {
   createProduct,
@@ -20,7 +21,7 @@ const {
   deleteProduct,
 } = require("../controllers/product.controller");
 
-// Public: Get products with pagination and filters.
+// Public: Get products with pagination, filtering and sorting.
 router.get("/", validateProductQuery, getProducts);
 
 // Public: Get a single product.

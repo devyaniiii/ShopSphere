@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 const AppError = require("../utils/AppError");
+const buildProductQuery = require("../utils/buildProductQuery");
 
 // Validate that a category exists and is active.
 const validateCategory = async (categoryId) => {
@@ -25,37 +26,13 @@ const createProduct = async (data) => {
 
 // Get products with pagination, filtering and sorting.
 const getProducts = async (query) => {
-  const page = query.page === undefined ? 1 : Number(query.page);
-  const limit = query.limit === undefined ? 10 : Number(query.limit);
-
-  const allowedSortFields = ["name", "price", "stock", "createdAt", "updatedAt"];
-
-  if (!Number.isInteger(page) || page < 1) {
-    throw new AppError("Page must be a positive integer.", 400);
-  }
-
-  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-    throw new AppError("Limit must be between 1 and 100.", 400);
-  }
-
-  const requestedSort = query.sort || "-createdAt";
-  const sortField = requestedSort.startsWith("-") ? requestedSort.slice(1) : requestedSort;
-
-  if (!allowedSortFields.includes(sortField)) {
-    throw new AppError("Invalid sort field.", 400);
-  }
-
-  const sort = {
-    [sortField]: requestedSort.startsWith("-") ? -1 : 1,
-  };
-
-  const filter = { isActive: true };
+  const { filter, sort, page, limit, skip } = buildProductQuery(query);
 
   if (query.category) {
     await validateCategory(query.category);
-    filter.category = query.category;
   }
 
+  // Preserve the existing regular-expression search parameter.
   if (query.search) {
     const escapedSearch = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -65,8 +42,6 @@ const getProducts = async (query) => {
     ];
   }
 
-  const skip = (page - 1) * limit;
-
   const [items, totalItems] = await Promise.all([
     Product.find(filter)
       .populate("category", "name slug")
@@ -74,6 +49,7 @@ const getProducts = async (query) => {
       .skip(skip)
       .limit(limit)
       .lean(),
+
     Product.countDocuments(filter),
   ]);
 

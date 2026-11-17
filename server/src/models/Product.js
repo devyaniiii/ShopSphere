@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
@@ -6,17 +5,17 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Product name is required"],
-      trim: true
+      trim: true,
     },
     description: {
       type: String,
       required: [true, "Product description is required"],
-      trim: true
+      trim: true,
     },
     price: {
       type: Number,
       required: [true, "Product price is required"],
-      min: [0, "Price cannot be negative"]
+      min: [0, "Price cannot be negative"],
     },
     stock: {
       type: Number,
@@ -25,28 +24,34 @@ const productSchema = new mongoose.Schema(
       min: [0, "Stock cannot be negative"],
       validate: {
         validator: Number.isInteger,
-        message: "Stock must be a whole number"
-      }
+        message: "Stock must be a whole number",
+      },
     },
     images: {
       type: [String],
-      default: []
+      default: [],
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: [true, "Product category is required"]
+      required: [true, "Product category is required"],
     },
     isActive: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
+// Text search index.
 productSchema.index({ name: "text", description: "text" });
+
+// Indexes supporting active-product filtering and common catalog filters.
+productSchema.index({ isActive: 1, category: 1 });
+productSchema.index({ isActive: 1, price: 1 });
+productSchema.index({ isActive: 1, stock: 1 });
 
 module.exports = mongoose.model("Product", productSchema);

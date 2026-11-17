@@ -15,7 +15,7 @@ const createProduct = asyncHandler(async (req, res) => {
 // GET /api/products
 const getProducts = asyncHandler(async (req, res) => {
   const query = req.validatedQuery || req.query;
-  const searchQuery = searchService.sanitizeSearchQuery(req.query.q);
+  const searchQuery = searchService.sanitizeSearchQuery(query.q);
 
   const result = searchQuery
     ? await searchService.searchProducts(searchQuery, query)
